@@ -1,0 +1,14 @@
+Leer de archivo ascii
+Comentar uso de las variables en el archivo, *comentar valores por defecto
+Revisar la potencia para cada canal
+*A debe ser un arreglo de elementos
+*A con ran entre 0.999 y 1.001
+Preguntar la estimativa de la caida del potencial
+Incerteza con funcion de la distancia (sigma)
+Definir un error aceptable de penetracion
+Simular motores independientes
+Asincronia de procesos de robots
+Archivos de salida
+*cambiar rotacion por rotacion_delta 
+*eta en vez de a
+*que cambie en thetha en cada giro
