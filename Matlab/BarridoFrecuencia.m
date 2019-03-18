@@ -23,7 +23,7 @@ function thetha = BarridoFrecuencia(robot_referencia,robots,DELTA_ROTACION,ALFA_
                         alfa = alfa + (2*pi);
                     end
                     eta(k)= LobuloCos(abs(alfa-robots(robot_referencia).thetha));
-                    phi(k) = Potencial([robots(robot_referencia).posicionRect.x,robots(robot_referencia).posicionRect.y],[robots(robot_lejano).posicionRect.x,robots(robot_lejano).posicionRect.y],robots(robot_lejano).constante_potencial,ALFA_POTENCIAL,MEDIA_RUIDO,SIGMA_POTENCIAL);
+                    phi(k) = Potencial([robots(robot_referencia).posicionRect.x,robots(robot_referencia).posicionRect.y],[robots(robot_lejano).posicionRect.x,robots(robot_lejano).posicionRect.y],robots(robot_lejano).constante_potencial,[robots(robot_referencia).thetha,robots(robot_referencia).thetha],ALFA_POTENCIAL,MEDIA_RUIDO,SIGMA_POTENCIAL);
                     k=k+1;
                 end
             end
