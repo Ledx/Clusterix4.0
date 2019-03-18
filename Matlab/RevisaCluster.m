@@ -1,5 +1,6 @@
 function mayor = RevisaCluster(robots,N,robot_actual)
-%Funcion encargada de revisar la distribucion de clusters formados
+%Funcion encargada de revisar si el robot actual pertenece al cluster mas
+%grande formado hasta el momento
 
 
     mayor = 0;

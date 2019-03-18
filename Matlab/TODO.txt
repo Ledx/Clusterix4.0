@@ -1,5 +1,5 @@
-Leer de archivo ascii
-Comentar uso de las variables en el archivo, *comentar valores por defecto
+*Leer de archivo ascii
+*Comentar uso de las variables en el archivo, *comentar valores por defecto
 Revisar la potencia para cada canal
 *A debe ser un arreglo de elementos
 *A con ran entre 0.999 y 1.001

@@ -10,7 +10,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Desarrollador: Ing. Led Eduardo Ruvalcaba Tamés
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%Actualizado 22/08/18 1135 hrs UTC-6
+%Actualizado 18/03/19 1135 hrs UTC-6
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 clear all;
@@ -20,15 +20,44 @@ close all;
 format long
 
 %Carga de parametros iniciales
-[REPETICIONES,ITERACIONES,L,N,A_POTENCIAL,ALFA_POTENCIAL,R,DELTA_AVANCE,DELTA_ROTACION,W,SIGMA_ROTACION,R_COLISION,ACTIVAR_GRAFICOS,TAM_IDENTIFICADOR]=CargaParametros();
+[REPETICIONES,ITERACIONES,L,N,A_POTENCIAL,ALFA_POTENCIAL,R,DELTA_AVANCE,DELTA_ROTACION,W,MEDIA_RUIDO,SIGMA_POTENCIAL,SIGMA_ROTACION,R_COLISION,ACTIVAR_GRAFICOS,TAM_IDENTIFICADOR]=CargaParametros();
 colores = ['c*';'m*';'y*';'m+';'g*';'b*';'y+';'r*';'c+'];
 %Creacion de manejadores de archivos
 identificador = strcat(CreaIdentificador(TAM_IDENTIFICADOR),'-',date);
-% api=CreaArchivo(identificador,1);
+api=CreaArchivo(identificador,1);
 his=CreaArchivo(identificador,2);
 clu=CreaArchivo(identificador,3);
 tie=CreaArchivo(identificador,4);
-%fprintf(api,'%d \n',[REPETICIONES,ITERACIONES,L,N,A_POTENCIAL,ALFA_POTENCIAL,R,DELTA_AVANCE,DELTA_ROTACION,W,SIGMA_ROTACION,R_COLISION,ACTIVAR_GRAFICOS,TAM_IDENTIFICADOR]); 
+fprintf(api,'REPETICIONES = %d',REPETICIONES);
+fprintf(api,'\n');
+fprintf(api,'ITERACIONES = %d',ITERACIONES); 
+fprintf(api,'\n');
+fprintf(api,'L = %d',L);
+fprintf(api,'\n');
+fprintf(api,'N = %d',N);
+fprintf(api,'\n');
+fprintf(api,'A_POTENCIAL = ');
+fprintf(api,'%d ',A_POTENCIAL); 
+fprintf(api,'\n');
+fprintf(api,'ALFA_POTENCIAL = %d',ALFA_POTENCIAL);
+fprintf(api,'\n');
+fprintf(api,'R = %d',R);
+fprintf(api,'\n');
+fprintf(api,'DELTA_AVANCE = %d',DELTA_AVANCE); 
+fprintf(api,'\n');
+fprintf(api,'DELTA_ROTACION = %d',DELTA_ROTACION);
+fprintf(api,'\n');
+fprintf(api,'W = ');
+fprintf(api,'%d ',W);
+fprintf(api,'\n');
+fprintf(api,'SIGMA_ROTACION = %d',SIGMA_ROTACION);
+fprintf(api,'\n');
+fprintf(api,'R_COLISION = %d',R_COLISION);
+fprintf(api,'\n');
+fprintf(api,'ACTIVAR_GRAFICOS = %d',ACTIVAR_GRAFICOS);
+fprintf(api,'\n');
+fprintf(api,'TAM_IDENTIFICADOR = %d',TAM_IDENTIFICADOR); 
+
 %Simulacion
 ci=1;
 cr=1;
@@ -75,7 +104,7 @@ while cr<REPETICIONES + 1
                 end
             end
         end
-        robots=RotacionAvance(robots,DELTA_ROTACION,N,W,ALFA_POTENCIAL,DELTA_AVANCE,SIGMA_ROTACION);
+        robots=RotacionAvance(robots,DELTA_ROTACION,N,W,ALFA_POTENCIAL,DELTA_AVANCE,SIGMA_ROTACION,MEDIA_RUIDO,SIGMA_POTENCIAL);
         ci=ci+1;
     end
     if ACTIVAR_GRAFICOS
@@ -102,7 +131,7 @@ end
 
 fprintf(his,'%d ',histograma);
 fprintf(his,'\n');
-% fclose(api);
+fclose(api);
 fclose(his);
 fclose(clu);
 fclose(tie);
