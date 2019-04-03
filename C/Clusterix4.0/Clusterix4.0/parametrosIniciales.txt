@@ -1,0 +1,25 @@
+#############################################################################################
+#Parametros generales de operacion
+9	#Numero de Robots
+3	#Radio del robot
+300 	#Longitud X,Y del area de lanzado
+8.4	#Constante de potencial
+2	#Alfa de potencial
+0.4	#Tamaño de paso del robot
+1000	#Repeticiones
+5000	#Movimientos maximos por repeticion
+#############################################################################################
+#Parametros para error
+0	#Sigma rotación[deg]
+0.3	#Sigma avance[pasos del robot]
+#############################################################################################
+#Pesos de agrupamiento
+1	#Peso de la frecuencia 1
+2	#Peso de la frecuencia 2
+3	#Peso de la frecuencia 3
+4	#Peso de la frecuencia 4
+5	#Peso de la frecuencia 5
+6	#Peso de la frecuencia 6
+7	#Peso de la frecuencia 7
+8	#Peso de la frecuencia 8
+9	#Peso de la frecuencia 9
