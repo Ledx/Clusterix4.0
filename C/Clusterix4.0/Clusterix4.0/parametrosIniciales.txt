@@ -7,7 +7,7 @@
 2	#Alfa de potencial
 0.4	#Tamaño de paso del robot
 1000	#Repeticiones
-5000	#Movimientos maximos por repeticion
+5000	#Iteraciones
 #############################################################################################
 #Parametros para error
 0	#Sigma rotación[deg]

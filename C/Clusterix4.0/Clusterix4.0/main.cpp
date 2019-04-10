@@ -32,25 +32,29 @@
 /*----------------------------------------------------------------------------*/
 /*Variables globales    													  */
 /*----------------------------------------------------------------------------*/
-int REPETICIONES, TMAX, L, *histograma, N;
-float E, ALFA, R, PASO, desv, fd, *w;
+int REPETICIONES, ITERACIONES, L, *histograma, N, ACTIVAR_GRAFICOS;
+float E, ALFA_POTENCIAL, A_POTENCIAL, R, DELTA_AVANCE, DELTA_ROTACION, MEDIA_RUIDO, SIGMA_POTENCIAL, SIGMA_ROTACION, SIGMA_AVANCE,
+R_COLISION, *w;
 /*----------------------------------------------------------------------------*/
 /*Estructuras           													  */
 /*----------------------------------------------------------------------------*/
 
 struct robot {
 	double thetha;
-	double thethaP = 0;
-	float *giro;
 	float radio;
+	float constante_potencial;
 	float posicion[2];
+	double thethaInicial = 0;
 	float pasos = 0;
-	float carga;
 	int clustered = 0;
 	int *vecindad;
-	float *potenciales;
 	int clase = 1;
-}*e;
+	float tiempo = 0;
+	float distancia_recorrida;
+	float tiempo_estabilidad = 0;
+	float carga;
+	float *giro;
+}*robots;
 
 struct nodoP {
 	int valor;
@@ -65,9 +69,9 @@ struct nodoL {
 /*----------------------------------------------------------------------------*/
 
 void acomodo(FILE *archivo);
-int inicializacion(FILE *archivo);
-void LecturaParametros(FILE *archivo);
-void movimiento(int i);
+int Inicializacion(FILE *archivo);
+void CargaParametros(FILE *archivo);
+void RotacionAvance(int i);
 float potencial(int i, int clase);
 void limpiador();
 float distancia(float a[], float b[]);
@@ -87,6 +91,8 @@ float distribucionNormal(float media, float var, float restriccion);
 /*----------------------------------------------------------------------------*/
 /*Definicion de Funciones  													  */
 /*----------------------------------------------------------------------------*/
+/*Funciones principales														  */
+/*----------------------------------------------------------------------------*/
 
 int main(int argc, char *argv[]) {
 
@@ -102,7 +108,7 @@ int main(int argc, char *argv[]) {
 	archivo[5] = fopen("histograma.txt", "w");
 
 	while (status) {
-		status = inicializacion(archivo[4]);
+		status = Inicializacion(archivo[4]);
 		if (status == 1) {
 			return 0;
 		}
@@ -110,10 +116,10 @@ int main(int argc, char *argv[]) {
 
 	while (salir1 < REPETICIONES) {
 		acomodo(archivo[0]);
-		while (salir2 < TMAX && (Exito() != 0)) {
+		while (salir2 < ITERACIONES && (Exito() != 0)) {
 
 			for (i = 0; i < N; i++) {
-				fprintf(archivo[1], "%.2f %.2f %.2f ", e[i].posicion[0], e[i].posicion[1], e[i].thetha);
+				fprintf(archivo[1], "%.2f %.2f %.2f ", robots[i].posicion[0], robots[i].posicion[1], robots[i].thetha);
 			}
 			fprintf(archivo[1], "\n");
 
@@ -125,12 +131,12 @@ int main(int argc, char *argv[]) {
 
 			for (i = 0; i < N; i++) {
 				for (j = 0; j < N; j++) {
-					e[i].giro[j] = potencial(i, j + 1);
+					robots[i].giro[j] = potencial(i, j + 1);
 				}
 			}
 
 			for (i = 0; i < N; i++) {
-				movimiento(i);
+				RotacionAvance(i);
 			}
 			cluster();
 
@@ -140,7 +146,7 @@ int main(int argc, char *argv[]) {
 		Clases(archivo[2]);
 
 		for (k = 0; k < N; k++) {
-			fprintf(archivo[0], "%.2f %.2f %.2f  ", e[k].posicion[0], e[k].posicion[1], e[k].thetha);
+			fprintf(archivo[0], "%.2f %.2f %.2f  ", robots[k].posicion[0], robots[k].posicion[1], robots[k].thetha);
 		}
 
 		limpiador();
@@ -167,6 +173,10 @@ int main(int argc, char *argv[]) {
 	return 0;
 }
 
+/*----------------------------------------------------------------------------*/
+/*Funciones secundarias														  */
+/*----------------------------------------------------------------------------*/
+
 void espera(int mseg) {
 	clock_t t = mseg + clock();
 	while (t > clock());
@@ -178,15 +188,15 @@ void acomodo(FILE *archivo) {
 	for (i = 0; i < N; i++) {
 		for (j = 0; j < 2; j++) {
 			/*Lado de una region de borde cuadrado de dimension LxL*/
-			e[i].posicion[j] = rand() % L;
+			robots[i].posicion[j] = rand() % L;
 		}
 		/*Orientacion del robot en el sistema de coordenadas del laboratorio*/
-		e[i].thetha = rand() % 360;
+		robots[i].thetha = rand() % 360;
 
 	}
 	for (i = 0; i < N; i++) {
 
-		fprintf(archivo, "%.2f %.2f %.2f  ", e[i].posicion[0], e[i].posicion[1], e[i].thetha);
+		fprintf(archivo, "%.2f %.2f %.2f  ", robots[i].posicion[0], robots[i].posicion[1], robots[i].thetha);
 	}
 }
 
@@ -194,99 +204,61 @@ void BarridoFrecuencias(int i) {
 	int j;
 
 	for (j = 0; j < N; j++) {
-		if (e[j].clase > e[i].clase) {
-			e[i].clustered = 0;
+		if (robots[j].clase > robots[i].clase) {
+			robots[i].clustered = 0;
 			break;
 		}
 	}
 }
-void movimiento(int i) {
+void RotacionAvance(int i) {
 
 	float thetaG, pasoG, wP = 0;
 	int j;
-	if (e[i].clase > 1) {
+	if (robots[i].clase > 1) {
 		BarridoFrecuencias(i);
 		for (j = 0; j < N; j++) {
 
-			if (j > (e[i].clase - 1)) {
-				e[i].thethaP = e[i].thethaP + (w[j] * e[i].giro[j]);
+			if (j > (robots[i].clase - 1)) {
+				//robots[i].thethaP = robots[i].thethaP + (w[j] * robots[i].giro[j]);
 				wP = w[j] + wP;
 			}
 
 		}
-		e[i].thethaP = e[i].thethaP / wP;
+		//robots[i].thethaP = robots[i].thethaP / wP;
 	}
 	else {
-		e[i].thethaP = e[i].giro[0];
+		//robots[i].thethaP = robots[i].giro[0];
 	}
 
-	if (e[i].clustered == 0) {
+	if (robots[i].clustered == 0) {
 		/*Version que patina*/
 		//////////////////////////////////////////////////////////////////
-		thetaG = distribucionNormal(e[i].thethaP*(180 / PI), desv, 0);
+		//thetaG = distribucionNormal(robots[i].thethaP*(180 / PI), desv, 0);
 		//////////////////////////////////////////////////////////////////
-		pasoG = distribucionNormal(PASO, fd*PASO, 1);
+		pasoG = distribucionNormal(DELTA_AVANCE, SIGMA_AVANCE, 1);
 		/*Sistema de coordenadas del laboratorio*/
-		e[i].thetha = e[i].thetha - (90 - thetaG);
-		e[i].posicion[0] += pasoG * cos((e[i].thetha*(PI / 180)));
-		e[i].posicion[1] += pasoG * sin((e[i].thetha*(PI / 180)));
+		robots[i].thetha = robots[i].thetha - (90 - thetaG);
+		robots[i].posicion[0] += pasoG * cos((robots[i].thetha*(PI / 180)));
+		robots[i].posicion[1] += pasoG * sin((robots[i].thetha*(PI / 180)));
 		//Version que no patina
 		/*e[i].thetha = e[i].thetha - ((1.5707963267949 - e[i].giro)*(180/PI));
 		e[i].posicion[0] += PASO * cos((e[i].thetha*(PI/180)));
 		e[i].posicion[1] += PASO * sin((e[i].thetha*(PI / 180)));*/
 		for (j = 0; j < N; j++) {
-			e[i].thethaP = 0;
+			//robots[i].thethaP = 0;
 		}
-		e[i].pasos += 1;
+		robots[i].pasos += 1;
 	}
 
 }
 
-float potencial(int j, int clase) {
+float potencial(float *thetha) {
 
 	int i;
 	float potencial, d, potencialx = 0, potencialy = 0, phi = 0, alfa = 0, gama = 0, dx, dy;
 
-	if (clase == 1) {
-		for (i = 0; i < N; i++) {
-			if (j != i) {
-				d = distancia(e[j].posicion, e[i].posicion);
-				potencial = (E / (pow(d, ALFA)));
-
-				dy = e[i].posicion[1] - e[j].posicion[1];
-				dx = e[i].posicion[0] - e[j].posicion[0];
-
-				phi = atan2(dy, dx);
-				alfa = phi + (1.5707963267949 - (e[j].thetha*(PI / 180)));
-				potencialx = potencialx + (potencial*cos(alfa));
-				potencialy = potencialy + (potencial*sin(alfa));
-			}
-			phi = 0;
-			alfa = 0;
-		}
-	}
-	else {
-		for (i = 0; i < N; i++) {
-			if (j != i && e[i].clase == clase) {
-				d = distancia(e[j].posicion, e[i].posicion);
-				potencial = (E / (pow(d, ALFA)));
-
-				dy = e[i].posicion[1] - e[j].posicion[1];
-				dx = e[i].posicion[0] - e[j].posicion[0];
-
-				phi = atan2(dy, dx);
-				alfa = phi + (1.5707963267949 - (e[j].thetha*(PI / 180)));
-				potencialx = potencialx + (potencial*cos(alfa));
-				potencialy = potencialy + (potencial*sin(alfa));
-			}
-			phi = 0;
-			alfa = 0;
-		}
-	}
-	/*Sistema de coordenadas del robot*/
-	gama = atan2(potencialy, potencialx);
-
-	return gama;
+	potencial = (A_POTENCIAL * (LobuloCos(abs(thetha[0] - thetha[1]))) / (norm(x1 - x2) ^ ALFA_POTENCIAL) + normrnd(MEDIA_RUIDO, SIGMA_POTENCIAL));
+	return potencial;
 
 }
 
@@ -300,15 +272,14 @@ void limpiador()
 {
 	int j, i;
 	for (j = 0; j < N; j++) {
-		e[j].thetha = 0;
-		e[j].thethaP = 0;
-		e[j].clustered = 0;
-		e[j].pasos = 0;
-		e[j].posicion[0] = 0;
-		e[j].posicion[1] = 0;
+		robots[j].thetha = 0;
+		robots[j].clustered = 0;
+		robots[j].pasos = 0;
+		robots[j].posicion[0] = 0;
+		robots[j].posicion[1] = 0;
 		for (i = 0; i < N; i++) {
-			e[j].vecindad[i] = 0;
-			e[j].giro[i] = 0;
+			robots[j].vecindad[i] = 0;
+			robots[j].giro[i] = 0;
 		}
 
 	}
@@ -319,11 +290,11 @@ void cluster() {
 	for (i = 0; i < N; i++) {
 		for (j = 0; j < N; j++) {
 			if (i != j) {
-				if (distancia(e[i].posicion, e[j].posicion) < (2 * R)) {
-					e[i].clustered = 1;
-					e[j].clustered = 1;
-					e[i].vecindad[j] = 1;
-					e[j].vecindad[i] = 1;
+				if (distancia(robots[i].posicion, robots[j].posicion) < (2 * R)) {
+					robots[i].clustered = 1;
+					robots[j].clustered = 1;
+					robots[i].vecindad[j] = 1;
+					robots[j].vecindad[i] = 1;
 				}
 
 			}
@@ -358,7 +329,7 @@ void Clases(FILE *archivo) {
 
 	for (i = 0; i < N; i++) {
 		for (j = 0; j < N; j++) {
-			vecindades[i][j] = e[i].vecindad[j];
+			vecindades[i][j] = robots[i].vecindad[j];
 		}
 	}
 
@@ -385,7 +356,7 @@ void Clases(FILE *archivo) {
 		for (m = 0; m < N; m++) {
 			if (vecindadTemp[m] == 1 && mapaClase[m] == 0) {
 				mapaClase[m] = k;
-				e[m].clase = k;
+				robots[m].clase = k;
 			}
 		}
 
@@ -411,7 +382,7 @@ void SumaMediaDistancias(FILE *archivo) {
 	}
 	for (i = 0; i < N; i++) {
 		for (j = 0; j < N; j++) {
-			suma[i] += distancia(e[i].posicion, e[j].posicion);
+			suma[i] += distancia(robots[i].posicion, robots[j].posicion);
 
 		}
 	}
@@ -426,7 +397,7 @@ int Exito() {
 	int i;
 
 	for (i = 0; i < N; i++) {
-		if (e[i].clustered == 0) {
+		if (robots[i].clustered == 0) {
 			return 1;
 		}
 	}
@@ -443,12 +414,12 @@ void imprimirTablero(int Nexperimento) {
 	int i;
 	printf("Experimento:%d", Nexperimento + 1);
 	for (i = 0; i < N; i++) {
-		gotoxy(e[i].posicion[0] / 10, e[i].posicion[1] / 10);
+		gotoxy(robots[i].posicion[0] / 10, robots[i].posicion[1] / 10);
 		printf("%d", i + 1);
 	}
 }
 
-void LecturaParametros(FILE *archivo) {
+void CargaParametros(FILE *archivo) {
 	int i = 0, j = 0, z;
 	char buffer[100], cadena[NP][100], c = '\n', d = '#', parametro[25];
 	double parametros[NP];
@@ -484,13 +455,15 @@ void LecturaParametros(FILE *archivo) {
 	R = parametros[1];
 	L = (int)parametros[2] * R;
 	E = parametros[3];
-	ALFA = parametros[4];
-	PASO = parametros[5] * R;
+	ALFA_POTENCIAL = parametros[4];
+	DELTA_AVANCE = parametros[5] * R;
 	REPETICIONES = (int)parametros[6];
-	TMAX = (int)parametros[7];
-	desv = parametros[8];
-	fd = parametros[9];
+	ITERACIONES = (int)parametros[7];
+	SIGMA_ROTACION = parametros[8];
+	SIGMA_POTENCIAL = parametros[9];
 	w = (float*)malloc(N * sizeof(float*));
+
+	///////////////////////////////////A_POTENCIAL, R,  DELTA_ROTACION, MEDIA_RUIDO,  R_COLISION
 
 	for (i = 0; i <= N; i++) {
 		w[i] = parametros[(NP - N) + i];
@@ -498,14 +471,14 @@ void LecturaParametros(FILE *archivo) {
 
 }
 
-int inicializacion(FILE *archivo) {
+int Inicializacion(FILE *archivo) {
 	int i, j, status = 0;
 	time_t t;
 
 	/*Semilla de tiempo*/
 	srand((unsigned)time(NULL));
 	if (archivo != NULL) {
-		LecturaParametros(archivo);
+		CargaParametros(archivo);
 		fclose(archivo);
 		status = 0;
 	}
@@ -514,23 +487,20 @@ int inicializacion(FILE *archivo) {
 		scanf("%d", &status);
 	}
 	histograma = (int*)malloc(N * sizeof(int*));
-	e = (robot*)malloc(N * sizeof(robot));
+	robots = (robot*)malloc(N * sizeof(robot));
 	for (i = 0; i < N; i++) {
 		histograma[i] = 0;
-		e[i].vecindad = (int*)malloc(N * sizeof(int*));
-		e[i].potenciales = (float*)malloc(N * sizeof(float*));
-		e[i].clustered = 0;
-		e[i].pasos = 0;
-		e[i].clase = 1;
-		e[i].thethaP = 0;
-		e[i].giro = (float*)malloc(N * sizeof(float*));
+		robots[i].vecindad = (int*)malloc(N * sizeof(int*));
+		robots[i].clustered = 0;
+		robots[i].pasos = 0;
+		robots[i].clase = 1;
+		robots[i].giro = (float*)malloc(N * sizeof(float*));
 
 		/*Radio del robot*/
-		e[i].radio = R;
+		robots[i].radio = R;
 		for (j = 0; j < N; j++) {
-			e[i].vecindad[j] = 0;
-			e[i].potenciales[j] = 0;
-			e[i].giro[j] = 0;
+			robots[i].vecindad[j] = 0;
+			robots[i].giro[j] = 0;
 		}
 	}
 	return status;
@@ -586,6 +556,7 @@ struct nodoL* NuevoElementoLista(struct nodoL *primero, robot r) {
 	}
 	return primero;
 }
+
 float distribucionNormal(float media, float sigma, float restriccion) {
 	int i, k, ndat = 1000;
 	float y, aux = 0, dy;
@@ -604,4 +575,30 @@ float distribucionNormal(float media, float sigma, float restriccion) {
 		y = sigma * sqrt(12.0 / ndat)*(aux - (float)ndat / 2) + media;
 	}
 	return y;
+}
+
+float LobuloCos(float thetha) {
+	/*Funcion que calcula la atenuación con la que un robot percibe a otro*/
+
+	float a;
+	if (thetha < 0) {
+		while (thetha < 0)
+			thetha = thetha + (2 * PI);
+	}
+
+	if (thetha > (2 * PI)) {
+		while (thetha > (2 * PI))
+			thetha = thetha - (2 * PI);
+	}
+
+
+	if (thetha >= 0 && thetha <= ((70 * PI) / 180)){
+		a = cos(thetha)*cos(thetha)*cos(thetha);
+	}
+		
+	else
+		a = abs((long)cos(3 * thetha)) / 3;
+
+	return a;
+
 }
