@@ -8,7 +8,10 @@ Incerteza con funcion de la distancia (sigma)
 Definir un error aceptable de penetracion
 Simular motores independientes
 Asincronia de procesos de robots
-Archivos de salida
+*Archivos de salida
 *cambiar rotacion por rotacion_delta 
 *eta en vez de a
 *que cambie en thetha en cada giro
+Cambiar nombre de sigma potencial por sigma ruido
+Implementar sub avance
+Implementar espira magnetica.
