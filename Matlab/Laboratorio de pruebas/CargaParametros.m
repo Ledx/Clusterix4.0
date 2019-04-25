@@ -4,7 +4,7 @@ function [REPETICIONES,ITERACIONES,L,N,A_POTENCIAL,ALFA_POTENCIAL,R,DELTA_AVANCE
   REPETICIONES= 1;             %Numero de experimentos a realizar
   ITERACIONES = 2000;            %Numero de iteraciones por experimento
   L = 300;                      %Longitud del area de lanzamiento de medidas L x L
-  N = 9;                        %Numero de robots
+  N = 2;                        %Numero de robots
   A_POTENCIAL = [0.9990,1.0010];%Constante de potencial
   ALFA_POTENCIAL = 2;           %Exponente alfa de potencial
   R = 2;                        %Radio de activacion
