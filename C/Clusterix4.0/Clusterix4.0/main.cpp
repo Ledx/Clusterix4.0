@@ -87,6 +87,7 @@ struct nodoP* push(struct nodoP *primero, int valortemp);
 struct nodoP* pop(struct nodoP *primero, int *resultado);
 struct nodoL* NuevoElementoLista(struct nodoL *primero, robot robot);
 float distribucionNormal(float media, float var, float restriccion);
+void DestruyeCluster(int robot_actual);
 
 /*----------------------------------------------------------------------------*/
 /*Definicion de Funciones  													  */
@@ -284,7 +285,7 @@ void limpiador()
 
 	}
 }
-void cluster() {
+void RevisaCluster() {
 	int j, i;
 
 	for (i = 0; i < N; i++) {
@@ -602,3 +603,28 @@ float LobuloCos(float thetha) {
 	return a;
 
 }
+void DestruyeCluster(int robot_actual) {
+	/* Destruye un cluster*/
+	int i;
+
+	for (i = 0; i < N; i++) {
+		robots[robot_actual].vecindad[i] = 0;
+	}
+	if (RevisaCluster(robot_actual) == 1)
+			robots[robot_actual].clustered = 0;
+
+	robots[robot_actual].clase = 1;
+	robots[robot_actual].tiempo_estabilidad = 20;
+
+	for (i = 0; i < N; i++) {
+		if (robots[robot_actual].vecindad[i] == 1) {
+			robots[i].vecindad[robot_actual] = 0;
+			robots[robot_actual].clase = robots[robot_actual].clase - 1;
+		}
+			
+	}
+		
+
+}
+
+
