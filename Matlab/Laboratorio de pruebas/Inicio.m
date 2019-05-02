@@ -29,7 +29,7 @@ colores = ['c*';'m*';'y*';'m+';'g*';'b*';'y+';'r*';'c+'];
 %Simulacion
 %https://stackoverrun.com/es/q/7057547
 robots= Inicializacion(N,L,R,A_POTENCIAL);
-alfa = atan2(robots(robot_lejano).posicionRect.y-robots(robot_referencia).posicionRect.y,robots(robot_lejano).posicionRect.x-robots(robot_referencia).posicionRect.x)
+%alfa = atan2(robots(robot_lejano).posicionRect.y-robots(robot_referencia).posicionRect.y,robots(robot_lejano).posicionRect.x-robots(robot_referencia).posicionRect.x)
 
 % [xf yf]=ds2nfu(x,y); 
 % annotation(gcf,'arrow', xf,yf)
@@ -40,18 +40,31 @@ alfa = atan2(robots(robot_lejano).posicionRect.y-robots(robot_referencia).posici
 % plot(x,y,'k');
 % drawnow;
 
-robots(1).posicionRect.x = robots(1).posicionRect.x+DELTA_AVANCE * cos(robots(1).thetha);
-robots(1).posicionRect.y = robots(1).posicionRect.y+DELTA_AVANCE * sin(robots(1).thetha);
+% robots(1).posicionRect.x = robots(1).posicionRect.x+DELTA_AVANCE * cos(robots(1).thetha);
+% robots(1).posicionRect.y = robots(1).posicionRect.y+DELTA_AVANCE * sin(robots(1).thetha);
+% 
+% robots(1).posicionRect.x = robots(2).posicionRect.x+DELTA_AVANCE * cos(robots(2).thetha);
+% robots(1).posicionRect.y = robots(2).posicionRect.y+DELTA_AVANCE * sin(robots(2).thetha);
+% 
 
-robots(1).posicionRect.x = robots(2).posicionRect.x+DELTA_AVANCE * cos(robots(2).thetha);
-robots(1).posicionRect.y = robots(2).posicionRect.y+DELTA_AVANCE * sin(robots(2).thetha);
-
-p1 = [2 3];                         % First Point
-p2 = [9 8];                         % Second Point
-dp = p2-p1;                         % Difference
 figure(1)
-quiver(p1(1),p1(2),dp(1),dp(2),0)
+
+
+r = 15; 
+u = r * cos(robots(1).thetha); % convert polar (theta,r) to cartesian
+v = r * sin(robots(1).thetha);
+h = quiver(robots(1).posicionRect.x,robots(1).posicionRect.y,u,v);
+[x,y]=DIB_Circunferencia([robots(1).posicionRect.x,robots(1).posicionRect.y],R);
+plot(x,y,'k');
+
+
+
 grid
-axis([0  10    0  10])
-text(p1(1),p1(2), sprintf('(%.0f,%.0f)',p1))
-text(p2(1),p2(2), sprintf('(%.0f,%.0f)',p2))
+axis([0  300    0  300])
+hold on
+
+
+%clf
+
+
+
