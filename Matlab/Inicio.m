@@ -79,6 +79,7 @@ while cr<REPETICIONES + 1
                         hold on
                         plot(x,y,'k');
                         drawnow;
+                        
                     end
                 end
             end
@@ -93,25 +94,25 @@ while cr<REPETICIONES + 1
             if ci > 1
                 for i=1:N
                     hold on
-                    r = 15; 
-                    u = r * cos(robots(i).thetha); 
-                    v = r * sin(robots(i).thetha);
-                    h = quiver(robots(i).posicionRect.x,robots(i).posicionRect.y,u,v);
-                    [x,y]=DIB_Circunferencia([robots(i).posicionRect.x,robots(i).posicionRect.y],R);
-                    plot(x,y,'k');
-%                     plot(robots(i).posicionRect.x,robots(i).posicionRect.y,colores(i,:));
+%                     r = 15; 
+%                     u = r * cos(robots(i).thetha); 
+%                     v = r * sin(robots(i).thetha);
+%                     h = quiver(robots(i).posicionRect.x,robots(i).posicionRect.y,u,v);
+%                     [x,y]=DIB_Circunferencia([robots(i).posicionRect.x,robots(i).posicionRect.y],R);
+%                     plot(x,y,'k');
+                    plot(robots(i).posicionRect.x,robots(i).posicionRect.y,colores(i,:));
                     drawnow;
                 end
             else
                 for i=1:N
                     hold on
-                    r = 15; 
-                    u = r * cos(robots(i).thetha); 
-                    v = r * sin(robots(i).thetha);
-                    h = quiver(robots(i).posicionRect.x,robots(i).posicionRect.y,u,v);
-                    [x,y]=DIB_Circunferencia([robots(i).posicionRect.x,robots(i).posicionRect.y],R);
-                    plot(x,y,'k');
-%                     plot(robots(i).posicionRect.x,robots(i).posicionRect.y,'ko');
+%                     r = 15; 
+%                     u = r * cos(robots(i).thetha); 
+%                     v = r * sin(robots(i).thetha);
+%                     h = quiver(robots(i).posicionRect.x,robots(i).posicionRect.y,u,v);
+%                     [x,y]=DIB_Circunferencia([robots(i).posicionRect.x,robots(i).posicionRect.y],R);
+%                     plot(x,y,'k');
+                    plot(robots(i).posicionRect.x,robots(i).posicionRect.y,'ko');
                     drawnow;
                 end
             end
